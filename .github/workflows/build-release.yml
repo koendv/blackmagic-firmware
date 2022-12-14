@@ -1,0 +1,59 @@
+name: build release
+
+# Controls when the workflow will run
+on:
+  # Build on saturday
+  schedule:
+    - cron: "47 2 * * 6"
+
+  # Triggers the workflow on push or pull request
+  push:
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - id: upstream
+        uses: pozetroninc/github-action-get-latest-release@master
+        with:
+          repository: "blackmagic-debug/blackmagic"
+
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v3
+        with:
+          repository: "blackmagic-debug/blackmagic"
+          ref: ${{ steps.upstream.outputs.release }}
+
+      - uses: actions/checkout@v3
+        with:
+          path: "bmp"
+
+      - name: Patch
+        run: patch -p1 -i bmp/blackmagic.patch
+
+      # Use embedded toolchain
+      - uses: numworks/setup-arm-toolchain@2020-q4
+
+      - name: Install BMDA dependencies
+        run: sudo apt-get -y install libusb-dev libftdi1-dev libhidapi-dev
+
+      - name: Build all platform firmwares and Linux BMDA
+        run: make all_platforms
+
+      - name: Zip
+        run: ( ln -s src/artifacts blackmagic-firmware; zip -r9 blackmagic-firmware.zip blackmagic-firmware/ )
+
+      - name: Release
+        uses: ncipollo/release-action@v1
+        with:
+          artifacts: "blackmagic-firmware.zip"
+          body: "release"
+          tag: ${{ steps.upstream.outputs.release }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+          skipIfReleaseExists: true
+
+# not truncated

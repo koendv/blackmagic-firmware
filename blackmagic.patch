@@ -1,0 +1,156 @@
+diff --git a/src/Makefile b/src/Makefile
+index e2e4a16d..46aa6037 100644
+--- a/src/Makefile
++++ b/src/Makefile
+@@ -147,8 +147,8 @@ all_platforms:
+ 	fi
+ 	$(Q)$(MAKE) $(MFLAGS) -C ../libopencm3 lib/stm32/f1 lib/stm32/f4 lib/lm4f
+ 	$(Q)set -e ;\
+-	mkdir -p artifacts/$(shell git describe --always --dirty --tags) ;\
+-	echo "<html><body><ul>" > artifacts/index.html ;\
++	mkdir artifacts ;\
++	( echo -n "Blackmagic "; git describe; echo -n "Compiled " ; date -u ) > artifacts/README.TXT ;\
+ 	$(MAKE) clean ;\
+ 	for i in platforms/*/Makefile.inc ; do \
+ 		export DIRNAME=`dirname $$i` ;\
+@@ -159,25 +159,33 @@ all_platforms:
+ 		export CFLAGS=-Werror ;\
+ 		echo "Building for hardware platform: $$PROBE_HOST" ;\
+ 		$(MAKE);\
++		mkdir -p artifacts/$$PROBE_HOST ;\
+ 		if [ -f blackmagic ]; then \
+-			mv blackmagic artifacts/blackmagic-$$PROBE_HOST ;\
+-			echo "<li><a href='blackmagic-$$PROBE_HOST'>$$PROBE_HOST</a></li>"\
+-				>> artifacts/index.html ;\
++			mv blackmagic artifacts/$$PROBE_HOST/blackmagic-$$PROBE_HOST ;\
+ 		fi ;\
+ 		if [ -f blackmagic.bin ]; then \
+-			mv blackmagic.bin artifacts/blackmagic-$$PROBE_HOST.bin ;\
+-			echo "<li><a href='blackmagic-$$PROBE_HOST.bin'>$$PROBE_HOST</a></li>"\
+-				>> artifacts/index.html ;\
++			mv blackmagic.bin artifacts/$$PROBE_HOST/blackmagic-$$PROBE_HOST.bin ;\
++		fi ;\
++		if [ -f blackmagic.elf ]; then \
++			mv blackmagic.elf artifacts/$$PROBE_HOST/blackmagic-$$PROBE_HOST.elf ;\
++		fi ;\
++		if [ -f blackmagic.hex ]; then \
++			mv blackmagic.hex artifacts/$$PROBE_HOST/blackmagic-$$PROBE_HOST.hex ;\
+ 		fi ;\
+ 		if [ -f blackmagic_dfu.bin ]; then \
+-			mv blackmagic_dfu.bin artifacts/blackmagic_dfu-$$PROBE_HOST.bin ;\
+-			echo "<li><a href='blackmagic_dfu-$$PROBE_HOST.bin'>$$PROBE_HOST DFU</a></li>"\
+-				>> artifacts/index.html ;\
++			mv blackmagic_dfu.bin artifacts/$$PROBE_HOST/blackmagic_dfu-$$PROBE_HOST.bin ;\
++		fi ;\
++		if [ -f blackmagic_dfu.elf ]; then \
++			mv blackmagic_dfu.elf artifacts/$$PROBE_HOST/blackmagic_dfu-$$PROBE_HOST.elf ;\
++		fi ;\
++		if [ -f blackmagic_dfu.hex ]; then \
++			mv blackmagic_dfu.hex artifacts/$$PROBE_HOST/blackmagic_dfu-$$PROBE_HOST.hex ;\
++		fi ;\
++		if [ -f blackmagic_allinone.bin ]; then \
++			mv blackmagic_allinone.bin artifacts/$$PROBE_HOST/blackmagic_allinone-$$PROBE_HOST.bin ;\
+ 		fi ;\
+ 		$(MAKE) clean ;\
+ 	done ;\
+-	echo "</ul></body></html>" >> artifacts/index.html ;\
+-	cp artifacts/blackmagic* artifacts/$(shell git describe --always --dirty --tags)
+ 
+ command.c: include/version.h
+ 
+diff --git a/src/platforms/bluepill/Makefile.inc b/src/platforms/bluepill/Makefile.inc
+index e69de29b..00aa1226 100644
+--- a/src/platforms/bluepill/Makefile.inc
++++ b/src/platforms/bluepill/Makefile.inc
+@@ -0,0 +1,6 @@
++all:
++	$(MAKE) PROBE_HOST=stlink BLUEPILL=1
++
++host_clean:
++	-$(Q)$(RM) *.bin *elf *hex
++
+diff --git a/src/platforms/native/Makefile.inc b/src/platforms/native/Makefile.inc
+index a0ed3a6f..3a39f176 100644
+--- a/src/platforms/native/Makefile.inc
++++ b/src/platforms/native/Makefile.inc
+@@ -27,11 +27,15 @@ SRC +=               \
+ 	timing.c	\
+ 	timing_stm32.c	\
+ 
+-all:	blackmagic.bin blackmagic_dfu.bin blackmagic_dfu.hex
++all:	blackmagic.bin blackmagic_dfu.bin blackmagic_dfu.hex blackmagic_allinone.bin
+ 
+ blackmagic_dfu.elf: usbdfu.o dfucore.o dfu_f1.o serialno.o
+ 	@echo "  LD      $@"
+ 	$(Q)$(CC) $^ -o $@ $(LDFLAGS_BOOT)
+ 
++blackmagic_allinone.bin: blackmagic.bin blackmagic_dfu.bin
++	cp blackmagic_dfu.bin blackmagic_allinone.bin
++	dd if=blackmagic.bin of=blackmagic_allinone.bin bs=1k seek=8
++
+ host_clean:
+-	-$(Q)$(RM) blackmagic.bin blackmagic_dfu blackmagic_dfu.bin blackmagic_dfu.hex
++	-$(Q)$(RM) blackmagic.bin blackmagic_dfu blackmagic_dfu.bin blackmagic_dfu.hex blackmagic_allinone.bin
+diff --git a/src/platforms/stlink/Makefile.inc b/src/platforms/stlink/Makefile.inc
+index 4b707a0a..7ab2a39e 100644
+--- a/src/platforms/stlink/Makefile.inc
++++ b/src/platforms/stlink/Makefile.inc
+@@ -47,11 +47,15 @@ SRC +=          \
+ ifeq ($(ST_BOOTLOADER), 1)
+ all:	blackmagic.bin
+ else
+-all:	blackmagic.bin blackmagic_dfu.bin blackmagic_dfu.hex
++all:	blackmagic.bin blackmagic_dfu.bin blackmagic_dfu.hex blackmagic_allinone.bin
+ endif
+ blackmagic_dfu.elf: usbdfu.o dfucore.o dfu_f1.o stlink_common.o serialno.o
+ 	@echo "  LD      $@"
+ 	$(Q)$(CC) $^ -o $@ $(LDFLAGS_BOOT)
+ 
++blackmagic_allinone.bin: blackmagic.bin blackmagic_dfu.bin
++	cp blackmagic_dfu.bin blackmagic_allinone.bin
++	dd if=blackmagic.bin of=blackmagic_allinone.bin bs=1k seek=8
++
+ host_clean:
+ 	-$(Q)$(RM) *.bin *elf *hex
+diff --git a/src/platforms/stm32/blackpillv2.ld b/src/platforms/stm32/blackpillv2.ld
+index 4dbc774f..30566ba0 100644
+--- a/src/platforms/stm32/blackpillv2.ld
++++ b/src/platforms/stm32/blackpillv2.ld
+@@ -18,10 +18,13 @@
+  */
+ 
+ /* Define memory regions. */
++
++/* works on STM32F401CCU6, STM32F401CEU6 and STM32F411CEU6 */
++
+ MEMORY
+ {
+-	rom (rx) : ORIGIN = 0x08000000, LENGTH = 512K
+-	ram (rwx) : ORIGIN = 0x20000000, LENGTH = 96K
++	rom (rx) : ORIGIN = 0x08000000, LENGTH = 256K
++	ram (rwx) : ORIGIN = 0x20000000, LENGTH = 64K
+ }
+ 
+ /* Include the common ld script from libopenstm32. */
+diff --git a/src/platforms/swlink/Makefile.inc b/src/platforms/swlink/Makefile.inc
+index 779bd927..a55948b5 100644
+--- a/src/platforms/swlink/Makefile.inc
++++ b/src/platforms/swlink/Makefile.inc
+@@ -27,11 +27,15 @@ SRC +=          \
+ 	traceswoasync.c	\
+ 	platform_common.c \
+ 
+-all:	blackmagic.bin blackmagic_dfu.bin blackmagic_dfu.hex
++all:	blackmagic.bin blackmagic_dfu.bin blackmagic_dfu.hex blackmagic_allinone.bin
+ 
+ blackmagic_dfu.elf: usbdfu.o dfucore.o dfu_f1.o platform_common.o serialno.o
+ 	@echo "  LD      $@"
+ 	$(Q)$(CC) $^ -o $@ $(LDFLAGS_BOOT)
+ 
++blackmagic_allinone.bin: blackmagic.bin blackmagic_dfu.bin
++	cp blackmagic_dfu.bin blackmagic_allinone.bin
++	dd if=blackmagic.bin of=blackmagic_allinone.bin bs=1k seek=8
++
+ host_clean:
+-	-$(Q)$(RM) blackmagic.bin blackmagic_dfu blackmagic_dfu.bin blackmagic_dfu.hex
++	-$(Q)$(RM) blackmagic.bin blackmagic_dfu blackmagic_dfu.bin blackmagic_dfu.hex blackmagic_allinone.bin
