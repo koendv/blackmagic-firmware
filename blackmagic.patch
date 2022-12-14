@@ -9,7 +9,7 @@ index e2e4a16d..46aa6037 100644
 -	mkdir -p artifacts/$(shell git describe --always --dirty --tags) ;\
 -	echo "<html><body><ul>" > artifacts/index.html ;\
 +	mkdir artifacts ;\
-+	( echo -n "Blackmagic "; git describe; echo -n "Compiled " ; date -u ) > artifacts/README.TXT ;\
++	( echo -n "Blackmagic "; git describe --always --dirty --tags; echo -n "Compiled " ; date -u ) > artifacts/README.TXT ;\
  	$(MAKE) clean ;\
  	for i in platforms/*/Makefile.inc ; do \
  		export DIRNAME=`dirname $$i` ;\

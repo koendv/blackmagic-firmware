@@ -7,14 +7,45 @@ on:
     - cron: "47 3 * * 6"
 
   # Triggers the workflow on push or pull request
-  push:
+  # push:
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
 jobs:
-  build:
+
+  build-bmda:
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: msys2 {0}
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          repository: "blackmagic-debug/blackmagic"
+
+      - uses: msys2/setup-msys2@v2
+        with:
+          msystem: UCRT64
+          update: true
+          install: git zip mingw-w64-ucrt-x86_64-toolchain
+          pacboy: libusb:p libftdi:p hidapi:p
+
+      - name: build
+        run: |
+          rm -fv /ucrt64/lib/libftdi1.dll.a /ucrt64/lib/libhidapi.dll.a /ucrt64/lib/libusb-1.0.dll.a
+          mingw32-make PROBE_HOST=hosted HOSTED_BMP_ONLY=0
+          zip -j9 bmda.zip src/blackmagic.exe
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: bmda
+          path: bmda.zip
+          retention-days: 1
+
+  build-firmware:
     runs-on: ubuntu-latest
+    needs: build-bmda
 
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
@@ -38,6 +69,13 @@ jobs:
       - name: Build all platform firmwares and Linux BMDA
         run: make all_platforms
 
+      - uses: actions/download-artifact@v3
+        with:
+          name: bmda
+
+      - name: Unzip bmda
+        run: unzip bmda.zip -d src/artifacts/hosted
+
       - name: Zip
         run: ( ln -s src/artifacts blackmagic-firmware; zip -r9 blackmagic-firmware.zip blackmagic-firmware/ )
 
@@ -45,7 +83,7 @@ jobs:
         uses: ncipollo/release-action@v1
         with:
           artifacts: "blackmagic-firmware.zip"
-          body: "current git"
+          body: "bmp firmware, current git"
           tag: current
           token: ${{ secrets.GITHUB_TOKEN }}
           allowUpdates: true
