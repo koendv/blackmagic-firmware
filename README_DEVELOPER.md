@@ -1,11 +1,12 @@
 # Developer's Notes
 
-To compile the sources by hand:
+To compile the sources by hand, first install [arm-none-eabi-gcc](https://xpack.github.io/arm-none-eabi-gcc/). Then:
 
 ```
+git clone https://github.com/koendv/blackmagic-bluepill
 git clone https://github.com/blackmagic-debug/blackmagic
 cd blackmagic
-patch -p1 < ../blackmagic.patch
+patch -p1 < ../blackmagic-bluepill/blackmagic.patch
 make all_platforms
 ```
 

@@ -15,6 +15,13 @@ Connect a STM32F103 Blue Pill for serial upload:
 - Remove usb-serial adapter
 - Connect to usb.
 
+###  Pinout on STM32F103 blue pill
+
+|Signal|Pin|
+|---|---|
+|SWDIO|B14|
+|SWCLK|A5|
+
 ## Installation on STM32F401/STM32F411 black pill
 
 Download and extract the latest blackmagic-firmware.zip from [Releases](../../releases).
@@ -30,6 +37,15 @@ Connect a STM32F401 or STM32F411 Black Pill for upload:
 ```dfu-util -a 0 --dfuse-address 0x08000000:leave -R -D blackmagic-blackpillv2.bin```
 - Disconnect and reconnect to usb
 
+###  Pinout on STM32F401/STM32F411 black pill
+
+|Signal|Pin|
+|---|---|
+|SWDIO|A13|
+|SWCLK|A14|
+
+On some boards these pins are marked "SWDIO" and "SWSCK".
+
 ## Installation on other platforms
 
-Open the [source tree](https://github.com/blackmagic-debug/blackmagic/tree/main/src/platforms), go to the subdirectory for your platform and check the "readme" for installation instructions.
+Open the [source tree](https://github.com/blackmagic-debug/blackmagic/tree/main/src/platforms), go to the subdirectory for your platform and check the "readme" for installation instructions. The exact pinout used is in the file "platform.h".

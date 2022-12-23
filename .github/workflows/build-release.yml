@@ -21,14 +21,19 @@ jobs:
         shell: msys2 {0}
     steps:
       - id: upstream
-        uses: pozetroninc/github-action-get-latest-release@master
+        uses: joutvhu/get-release@v1
         with:
-          repository: "blackmagic-debug/blackmagic"
+          owner: "blackmagic-debug"
+          repo: "blackmagic"
+          latest: true
+          prerelease: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - uses: actions/checkout@v3
         with:
           repository: "blackmagic-debug/blackmagic"
-          ref: ${{ steps.upstream.outputs.release }}
+          ref: ${{ steps.upstream.outputs.tag_name }}
 
       - uses: msys2/setup-msys2@v2
         with:
@@ -54,16 +59,20 @@ jobs:
     needs: build-bmda
 
     steps:
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - id: upstream
-        uses: pozetroninc/github-action-get-latest-release@master
+        uses: joutvhu/get-release@v1
         with:
-          repository: "blackmagic-debug/blackmagic"
+          owner: "blackmagic-debug"
+          repo: "blackmagic"
+          latest: true
+          prerelease: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - uses: actions/checkout@v3
         with:
           repository: "blackmagic-debug/blackmagic"
-          ref: ${{ steps.upstream.outputs.release }}
+          ref: ${{ steps.upstream.outputs.tag_name }}
 
       - uses: actions/checkout@v3
         with:
@@ -85,7 +94,7 @@ jobs:
         with:
           name: bmda
 
-      - name: Unzip bmda
+      - name: Unzip windows bmda
         run: unzip bmda.zip -d src/artifacts/hosted
 
       - name: Zip
@@ -96,7 +105,7 @@ jobs:
         with:
           artifacts: "blackmagic-firmware.zip"
           body: "bmp firmware, release"
-          tag: ${{ steps.upstream.outputs.release }}
+          tag: ${{ steps.upstream.outputs.tag_name }}
           token: ${{ secrets.GITHUB_TOKEN }}
           skipIfReleaseExists: true
 

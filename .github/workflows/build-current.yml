@@ -73,7 +73,7 @@ jobs:
         with:
           name: bmda
 
-      - name: Unzip bmda
+      - name: Unzip windows bmda
         run: unzip bmda.zip -d src/artifacts/hosted
 
       - name: Zip
