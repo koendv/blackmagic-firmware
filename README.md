@@ -15,7 +15,7 @@ Download Black Magic Probe firmware for all platforms:
 
 Black Magic is also available as a windows and linux app for ftdi, cmsis-dap, stlink, jlink and black magic probes.
 
-- ``blackmagic.exe`` for windows. This is a command-line tool.
+- ``blackmagic.exe`` for windows. This is a command-line tool. To allow access to the ftdi/stlink/jlink/cmsis-dap devices, run [zadig](https://zadig.akeo.ie/) and choose WinUSB(libusb-1.0).
 - ``blackmagic-hosted`` for linux x86-64. Needs libusb-1.0 libftdi1 libhidapi-hidraw
 
 These programs are in the subdirectory ``hosted/`` of blackmagic-firmware.zip.
