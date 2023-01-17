@@ -25,9 +25,28 @@ Connect a STM32F103 Blue Pill for serial upload:
 ## Installation on STM32F401/STM32F411 black pill
 
 Download and extract the latest blackmagic-firmware.zip from [Releases](../../releases).
+
+### Windows
 Connect a STM32F401 or STM32F411 Black Pill for upload:
 
-- Connect the Black Pill to usb
+- Download [dfu-util](https://dfu-util.sourceforge.net/)
+- Connect the Black Pill to usb. Make sure it's a data cable, not a charging cable.
+- Push NRST and BOOT0
+- Wait a few seconds
+- Release NRST
+- Wait a few seconds
+- Release BOOT0
+- Upload the firmware:
+```./dfu-util -a 0 --dfuse-address 0x08000000:leave -R -D blackmagic-blackpillv2.bin```
+- If dfu-util gives the error _Cannot open DFU device xxxx:xxxx_ download [zadig](https://zadig.akeo.ie/), select "STM32 Bootloader", install the WinUSB driver and run dfu-util again.
+- Disconnect and reconnect to usb
+
+### Linux
+
+Connect a STM32F401 or STM32F411 Black Pill for upload:
+
+- Install dfu-util. On Debian/Ubuntu, type ``sudo apt-get install dfu-util`` 
+- Connect the Black Pill to usb.  Make sure it's a data cable, not a charging cable.
 - Push NRST and BOOT0
 - Wait a few seconds
 - Release NRST
@@ -35,6 +54,8 @@ Connect a STM32F401 or STM32F411 Black Pill for upload:
 - Release BOOT0
 - Upload the firmware:
 ```dfu-util -a 0 --dfuse-address 0x08000000:leave -R -D blackmagic-blackpillv2.bin```
+- If dfu-util does not find the black pill, execute dfu-util as root.
+- Install [udev rules](https://github.com/blackmagic-debug/blackmagic/tree/main/driver)
 - Disconnect and reconnect to usb
 
 ###  Pinout on STM32F401/STM32F411 black pill
