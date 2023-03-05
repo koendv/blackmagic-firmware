@@ -33,6 +33,9 @@ jobs:
 
       - name: build
         run: |
+          # apply PR #1397 "Windows CI"
+          wget https://github.com/blackmagic-debug/blackmagic/pull/1397.patch
+          git apply 1397.patch
           rm -fv /ucrt64/lib/libftdi1.dll.a /ucrt64/lib/libhidapi.dll.a /ucrt64/lib/libusb-1.0.dll.a
           mingw32-make PROBE_HOST=hosted HOSTED_BMP_ONLY=0
           zip -j9 bmda.zip src/blackmagic.exe
