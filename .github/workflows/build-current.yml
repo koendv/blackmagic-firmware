@@ -53,6 +53,13 @@ jobs:
         with:
           repository: "blackmagic-debug/blackmagic"
 
+      - name: Get commit hash
+        id: getcommit
+        run: echo "sha_short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+
+      - name: Report commit hash
+        run: echo ${{ steps.getcommit.outputs.sha_short }}
+
       - uses: actions/checkout@v3
         with:
           path: "bmp"
@@ -77,7 +84,7 @@ jobs:
         run: unzip bmda.zip -d src/artifacts/hosted
 
       - name: Zip
-        run: ( ln -s src/artifacts blackmagic-firmware; zip -r9 blackmagic-firmware.zip blackmagic-firmware/ )
+        run: ( ln -s src/artifacts blackmagic-firmware-${{ steps.getcommit.outputs.sha_short }}; zip -r9 blackmagic-firmware.zip blackmagic-firmware-${{ steps.getcommit.outputs.sha_short }}/ )
 
       - name: Release
         uses: ncipollo/release-action@v1

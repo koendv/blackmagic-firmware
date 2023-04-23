@@ -98,7 +98,7 @@ jobs:
         run: unzip bmda.zip -d src/artifacts/hosted
 
       - name: Zip
-        run: ( ln -s src/artifacts blackmagic-firmware; zip -r9 blackmagic-firmware.zip blackmagic-firmware/ )
+        run: ( ln -s src/artifacts blackmagic-firmware-${{ steps.upstream.outputs.tag_name }}; zip -r9 blackmagic-firmware.zip blackmagic-firmware-${{ steps.upstream.outputs.tag_name }}/ )
 
       - name: Release
         uses: ncipollo/release-action@v1
