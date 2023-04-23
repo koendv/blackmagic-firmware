@@ -62,10 +62,8 @@ Connect a STM32F401 or STM32F411 Black Pill for upload:
 
 |Signal|Pin|
 |---|---|
-|SWDIO|A13|
-|SWCLK|A14|
-
-On some boards these pins are marked "SWDIO" and "SWSCK".
+|SWDIO|B9|
+|SWCLK|B8|
 
 ## Installation on other platforms
 
