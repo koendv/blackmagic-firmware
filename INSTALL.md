@@ -60,10 +60,19 @@ Connect a STM32F401 or STM32F411 Black Pill for upload:
 
 ###  Pinout on STM32F401/STM32F411 black pill
 
+Pinout:
+
 |Signal|Pin|
 |---|---|
 |SWDIO|B9|
 |SWCLK|B8|
+
+Pinout on release v1.9.0 and earlier:
+
+|Signal|Pin|
+|---|---|
+|SWDIO|A13|
+|SWCLK|A14|
 
 ## Installation on other platforms
 
