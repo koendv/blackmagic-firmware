@@ -67,7 +67,7 @@ Pinout:
 |SWDIO|B9|
 |SWCLK|B8|
 
-Pinout on release v1.9.0 and earlier:
+Pinout on release v1.9.x and earlier:
 
 |Signal|Pin|
 |---|---|
