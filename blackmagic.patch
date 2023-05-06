@@ -1,8 +1,8 @@
 diff --git a/src/Makefile b/src/Makefile
-index d74ca3b8..f10f5e18 100644
+index e77b1e4e..be6e83b3 100644
 --- a/src/Makefile
 +++ b/src/Makefile
-@@ -152,8 +152,8 @@ all_platforms:
+@@ -166,8 +166,8 @@ all_platforms:
  	fi
  	$(Q)$(MAKE) $(MFLAGS) -C ../libopencm3 lib/stm32/f1 lib/stm32/f4 lib/lm4f
  	$(Q)set -e ;\
@@ -13,7 +13,7 @@ index d74ca3b8..f10f5e18 100644
  	$(MAKE) clean ;\
  	for i in platforms/*/Makefile.inc ; do \
  		export DIRNAME=`dirname $$i` ;\
-@@ -164,25 +164,33 @@ all_platforms:
+@@ -178,25 +178,33 @@ all_platforms:
  		export CFLAGS=-Werror ;\
  		echo "Building for hardware platform: $$PROBE_HOST" ;\
  		$(MAKE);\
@@ -58,19 +58,28 @@ index d74ca3b8..f10f5e18 100644
  
  command.c: include/version.h
  
-diff --git a/src/platforms/bluepill/Makefile.inc b/src/platforms/bluepill/Makefile.inc
-index e69de29b..00aa1226 100644
---- a/src/platforms/bluepill/Makefile.inc
-+++ b/src/platforms/bluepill/Makefile.inc
-@@ -0,0 +1,6 @@
-+all:
-+	$(MAKE) PROBE_HOST=stlink BLUEPILL=1
+diff --git a/src/platforms/blackpillv2/blackpillv2.ld b/src/platforms/blackpillv2/blackpillv2.ld
+index 4dbc774f..30566ba0 100644
+--- a/src/platforms/blackpillv2/blackpillv2.ld
++++ b/src/platforms/blackpillv2/blackpillv2.ld
+@@ -18,10 +18,13 @@
+  */
+ 
+ /* Define memory regions. */
 +
-+host_clean:
-+	-$(Q)$(RM) *.bin *elf *hex
++/* works on STM32F401CCU6, STM32F401CEU6 and STM32F411CEU6 */
 +
+ MEMORY
+ {
+-	rom (rx) : ORIGIN = 0x08000000, LENGTH = 512K
+-	ram (rwx) : ORIGIN = 0x20000000, LENGTH = 96K
++	rom (rx) : ORIGIN = 0x08000000, LENGTH = 256K
++	ram (rwx) : ORIGIN = 0x20000000, LENGTH = 64K
+ }
+ 
+ /* Include the common ld script from libopenstm32. */
 diff --git a/src/platforms/native/Makefile.inc b/src/platforms/native/Makefile.inc
-index a0ed3a6f..3a39f176 100644
+index 37be4eda..5a1a361d 100644
 --- a/src/platforms/native/Makefile.inc
 +++ b/src/platforms/native/Makefile.inc
 @@ -27,11 +27,15 @@ SRC +=               \
@@ -92,7 +101,7 @@ index a0ed3a6f..3a39f176 100644
 -	-$(Q)$(RM) blackmagic.bin blackmagic_dfu blackmagic_dfu.bin blackmagic_dfu.hex
 +	-$(Q)$(RM) blackmagic.bin blackmagic_dfu blackmagic_dfu.bin blackmagic_dfu.hex blackmagic_allinone.bin
 diff --git a/src/platforms/stlink/Makefile.inc b/src/platforms/stlink/Makefile.inc
-index 4b707a0a..7ab2a39e 100644
+index f91433b1..332c7761 100644
 --- a/src/platforms/stlink/Makefile.inc
 +++ b/src/platforms/stlink/Makefile.inc
 @@ -47,11 +47,15 @@ SRC +=          \
@@ -112,28 +121,8 @@ index 4b707a0a..7ab2a39e 100644
 +
  host_clean:
  	-$(Q)$(RM) *.bin *elf *hex
-diff --git a/src/platforms/stm32/blackpillv2.ld b/src/platforms/stm32/blackpillv2.ld
-index 4dbc774f..30566ba0 100644
---- a/src/platforms/stm32/blackpillv2.ld
-+++ b/src/platforms/stm32/blackpillv2.ld
-@@ -18,10 +18,13 @@
-  */
- 
- /* Define memory regions. */
-+
-+/* works on STM32F401CCU6, STM32F401CEU6 and STM32F411CEU6 */
-+
- MEMORY
- {
--	rom (rx) : ORIGIN = 0x08000000, LENGTH = 512K
--	ram (rwx) : ORIGIN = 0x20000000, LENGTH = 96K
-+	rom (rx) : ORIGIN = 0x08000000, LENGTH = 256K
-+	ram (rwx) : ORIGIN = 0x20000000, LENGTH = 64K
- }
- 
- /* Include the common ld script from libopenstm32. */
 diff --git a/src/platforms/swlink/Makefile.inc b/src/platforms/swlink/Makefile.inc
-index 779bd927..a55948b5 100644
+index 6238cc3b..fbf5b0c4 100644
 --- a/src/platforms/swlink/Makefile.inc
 +++ b/src/platforms/swlink/Makefile.inc
 @@ -27,11 +27,15 @@ SRC +=          \
