@@ -58,26 +58,6 @@ index e77b1e4e..be6e83b3 100644
  
  command.c: include/version.h
  
-diff --git a/src/platforms/blackpillv2/blackpillv2.ld b/src/platforms/blackpillv2/blackpillv2.ld
-index 4dbc774f..30566ba0 100644
---- a/src/platforms/blackpillv2/blackpillv2.ld
-+++ b/src/platforms/blackpillv2/blackpillv2.ld
-@@ -18,10 +18,13 @@
-  */
- 
- /* Define memory regions. */
-+
-+/* works on STM32F401CCU6, STM32F401CEU6 and STM32F411CEU6 */
-+
- MEMORY
- {
--	rom (rx) : ORIGIN = 0x08000000, LENGTH = 512K
--	ram (rwx) : ORIGIN = 0x20000000, LENGTH = 96K
-+	rom (rx) : ORIGIN = 0x08000000, LENGTH = 256K
-+	ram (rwx) : ORIGIN = 0x20000000, LENGTH = 64K
- }
- 
- /* Include the common ld script from libopenstm32. */
 diff --git a/src/platforms/native/Makefile.inc b/src/platforms/native/Makefile.inc
 index 37be4eda..5a1a361d 100644
 --- a/src/platforms/native/Makefile.inc
