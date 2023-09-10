@@ -81,8 +81,11 @@ jobs:
       - name: Patch
         run: patch -p1 -i bmp/blackmagic.patch
 
-      # Use embedded toolchain
-      - uses: numworks/setup-arm-toolchain@2020-q4
+      # Setup and use a suitable ARM GCC for the firmware
+      - name: Setup ARM GCC
+        uses: carlosperate/arm-none-eabi-gcc-action@v1
+        with:
+          release: '12.2.Rel1'
 
       - name: Install BMDA dependencies
         run: sudo apt-get -y install libusb-dev libftdi1-dev libhidapi-dev
