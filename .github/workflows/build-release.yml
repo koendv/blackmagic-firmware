@@ -46,7 +46,7 @@ jobs:
         run: |
           rm -fv /ucrt64/lib/libftdi1.dll.a /ucrt64/lib/libhidapi.dll.a /ucrt64/lib/libusb-1.0.dll.a
           mingw32-make PROBE_HOST=hosted HOSTED_BMP_ONLY=0
-          zip -j9 bmda.zip src/blackmagic.exe
+          zip -j9 bmda.zip src/blackmagic.exe 3rdparty/ftdi/amd64/ftd2xx.dll
 
       - uses: actions/upload-artifact@v3
         with:
