@@ -79,7 +79,7 @@ jobs:
           path: "bmp"
 
       - name: Patch
-        run: patch -p1 -i bmp/blackmagic.patch
+        run: patch -p1 -i bmp/blackmagic.patch; patch -p1 -i bmp/bluepill.patch
 
       # Setup and use a suitable ARM GCC for the firmware
       - name: Setup ARM GCC
