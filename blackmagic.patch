@@ -58,6 +58,16 @@ index cd8016fc..af1c5d4e 100644
  
  command.c: include/version.h
  
+diff --git a/src/platforms/bluepill/Makefile.inc b/src/platforms/bluepill/Makefile.inc
+index e69de29b..2b8c9f3c 100644
+--- a/src/platforms/bluepill/Makefile.inc
++++ b/src/platforms/bluepill/Makefile.inc
+@@ -0,0 +1,5 @@
++all:
++	make BLUEPILL=1 PROBE_HOST=stlink all
++
++clean:
++	make BLUEPILL=1 PROBE_HOST=stlink clean
 diff --git a/src/platforms/native/Makefile.inc b/src/platforms/native/Makefile.inc
 index 01d9245d..c6f590fe 100644
 --- a/src/platforms/native/Makefile.inc
