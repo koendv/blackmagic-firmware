@@ -2,9 +2,9 @@ name: build release
 
 # Controls when the workflow will run
 on:
-  # Build on saturday
+  # Build daily
   schedule:
-    - cron: "47 2 * * 6"
+    - cron: "47 4 * * *"
 
   # Triggers the workflow on push or pull request
   # push:
@@ -14,8 +14,38 @@ on:
 
 jobs:
 
+  check-upstream:
+    runs-on: ubuntu-latest
+    outputs:
+      new_release: ${{ steps.upstream.outputs.tag_name != steps.downstream.outputs.tag_name }}
+
+    steps:
+      - id: upstream
+        uses: joutvhu/get-release@v1
+        with:
+          owner: "blackmagic-debug"
+          repo: "blackmagic"
+          latest: true
+          prerelease: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - id: downstream
+        uses: joutvhu/get-release@v1
+        with:
+          owner: "koendv"
+          repo: "blackmagic-firmware"
+          latest: true
+          prerelease: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
   build-bmda:
     runs-on: windows-latest
+    needs: check-upstream
+    outputs:
+      new_release: ${{ needs.check-upstream.outputs.new_release }}
+    if: needs.check-upstream.outputs.new_release == 'true'
     defaults:
       run:
         shell: msys2 {0}
@@ -47,7 +77,6 @@ jobs:
           rm -fv /ucrt64/lib/libftdi1.dll.a /ucrt64/lib/libhidapi.dll.a /ucrt64/lib/libusb-1.0.dll.a
           mingw32-make PROBE_HOST=hosted HOSTED_BMP_ONLY=0
           zip -j9 bmda.zip src/blackmagic.exe 3rdparty/ftdi/amd64/ftd2xx.dll
-
       - uses: actions/upload-artifact@v3
         with:
           name: bmda
@@ -57,6 +86,7 @@ jobs:
   build-firmware:
     runs-on: ubuntu-latest
     needs: build-bmda
+    if: needs.build-bmda.outputs.new_release == 'true'
 
     steps:
       - id: upstream
