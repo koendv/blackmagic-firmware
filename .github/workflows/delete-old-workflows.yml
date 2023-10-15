@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  write
+  actions: write
 
 jobs:
   del_runs:
