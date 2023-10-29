@@ -84,7 +84,7 @@ jobs:
           name: bmda
 
       - name: Unzip windows bmda
-        run: unzip bmda.zip -d src/artifacts/hosted
+        run: unzip bmda.zip -d src/artifacts/windows
 
       - name: Zip
         run: ( ln -s src/artifacts blackmagic-firmware-${{ steps.getcommit.outputs.sha_short }}; zip -r9 blackmagic-firmware.zip blackmagic-firmware-${{ steps.getcommit.outputs.sha_short }}/ )
