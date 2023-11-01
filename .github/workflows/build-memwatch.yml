@@ -1,0 +1,44 @@
+name: build memwatch
+
+#
+# This workflow builds bmp with PR "memwatch: reading target memory while running".
+# There is no build output. This workflow is there so I get an email if the PR is broken.
+# See https://github.com/blackmagic-debug/blackmagic/pull/1655
+#
+
+# Controls when the workflow will run
+on:
+  # Build on monday
+  schedule:
+    - cron: "47 3 * * 1"
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+jobs:
+
+  build-memwatch:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          repository: "blackmagic-debug/blackmagic"
+
+      - name: memwatch patch
+        run: |
+          wget https://github.com/blackmagic-debug/blackmagic/pull/1655.patch
+          patch -p 1 -i 1655.patch
+
+      - name: setup arm gcc
+        uses: carlosperate/arm-none-eabi-gcc-action@v1
+        with:
+          release: '12.2.Rel1'
+
+      - name: build firmware
+        run: |
+          make PROBE_HOST=blackpill-f411ce ENABLE_MEMWATCH=1 ENABLE_RTT=1
+          make clean
+          make PROBE_HOST=blackpill-f411ce ENABLE_MEMWATCH=1
+
+# not truncated
