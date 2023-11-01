@@ -1,8 +1,8 @@
 diff --git a/src/Makefile b/src/Makefile
-index cd8016fc..af1c5d4e 100644
+index 6740485f..e7115196 100644
 --- a/src/Makefile
 +++ b/src/Makefile
-@@ -175,8 +175,8 @@ all_platforms:
+@@ -192,8 +192,8 @@ all_platforms:
  	fi
  	$(Q)$(MAKE) $(MFLAGS) -C ../libopencm3 lib/stm32/f1 lib/stm32/f4 lib/lm4f
  	$(Q)set -e ;\
@@ -13,7 +13,7 @@ index cd8016fc..af1c5d4e 100644
  	$(MAKE) clean ;\
  	for i in platforms/*/Makefile.inc ; do \
  		export DIRNAME=`dirname $$i` ;\
-@@ -187,25 +187,33 @@ all_platforms:
+@@ -204,25 +204,33 @@ all_platforms:
  		export CFLAGS=-Werror ;\
  		echo "Building for hardware platform: $$PROBE_HOST" ;\
  		$(MAKE);\
@@ -81,10 +81,10 @@ index 01d9245d..c6f590fe 100644
 -	-$(Q)$(RM) blackmagic.bin blackmagic_dfu blackmagic_dfu.bin blackmagic_dfu.hex
 +	-$(Q)$(RM) blackmagic.bin blackmagic_dfu blackmagic_dfu.bin blackmagic_dfu.hex blackmagic_allinone.bin
 diff --git a/src/platforms/stlink/Makefile.inc b/src/platforms/stlink/Makefile.inc
-index 8614c52e..e40b566b 100644
+index d10878a4..e3875fc9 100644
 --- a/src/platforms/stlink/Makefile.inc
 +++ b/src/platforms/stlink/Makefile.inc
-@@ -48,11 +48,15 @@ SRC +=          \
+@@ -52,11 +52,15 @@ SRC +=          \
  ifeq ($(ST_BOOTLOADER), 1)
  all:	blackmagic.bin
  else
