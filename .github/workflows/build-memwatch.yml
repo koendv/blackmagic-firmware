@@ -2,7 +2,7 @@ name: build memwatch
 
 #
 # This workflow builds bmp with PR "memwatch: reading target memory while running".
-# There is no build output. This workflow is there so I get an email if the PR is broken.
+# This workflow is there so I get an email if the PR is broken.
 # See https://github.com/blackmagic-debug/blackmagic/pull/1655
 #
 
@@ -17,10 +17,46 @@ on:
 
 jobs:
 
-  build-memwatch:
+  build-bmda:
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: msys2 {0}
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          repository: "blackmagic-debug/blackmagic"
+
+      - uses: msys2/setup-msys2@v2
+        with:
+          msystem: UCRT64
+          update: true
+          install: git zip patch mingw-w64-ucrt-x86_64-toolchain
+          pacboy: libusb:p libftdi:p hidapi:p
+
+      - name: memwatch patch
+        run: |
+          wget https://github.com/blackmagic-debug/blackmagic/pull/1655.patch
+          patch -p 1 -i 1655.patch
+
+      - name: build
+        run: |
+          rm -fv /ucrt64/lib/libftdi1.dll.a /ucrt64/lib/libhidapi.dll.a /ucrt64/lib/libusb-1.0.dll.a
+          mingw32-make PROBE_HOST=hosted HOSTED_BMP_ONLY=0 ENABLE_MEMWATCH=1
+          zip -j9 bmda.zip src/blackmagic.exe 3rdparty/ftdi/amd64/ftd2xx.dll
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: bmda
+          path: bmda.zip
+          retention-days: 1
+
+  build-firmware:
     runs-on: ubuntu-latest
+    needs: build-bmda
 
     steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v3
         with:
           repository: "blackmagic-debug/blackmagic"
@@ -30,15 +66,49 @@ jobs:
           wget https://github.com/blackmagic-debug/blackmagic/pull/1655.patch
           patch -p 1 -i 1655.patch
 
-      - name: setup arm gcc
+      - name: Get commit hash
+        id: getcommit
+        run: echo "sha_short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+
+      - name: Report commit hash
+        run: echo ${{ steps.getcommit.outputs.sha_short }}
+
+      - uses: actions/checkout@v3
+        with:
+          path: "bmp"
+
+      - name: Patch
+        run: patch -p1 -i bmp/blackmagic.patch; patch -p1 -i bmp/bluepill.patch; patch -p1 -i bmp/flash128k.patch
+
+      # Setup and use a suitable ARM GCC for the firmware
+      - name: Setup ARM GCC
         uses: carlosperate/arm-none-eabi-gcc-action@v1
         with:
           release: '12.2.Rel1'
 
-      - name: build firmware
-        run: |
-          make PROBE_HOST=blackpill-f411ce ENABLE_MEMWATCH=1 ENABLE_RTT=1
-          make clean
-          make PROBE_HOST=blackpill-f411ce ENABLE_MEMWATCH=1
+      - name: Install BMDA dependencies
+        run: sudo apt-get -y install libusb-dev libftdi1-dev libhidapi-dev
+
+      - name: Build all platform firmwares and Linux BMDA
+        run: make all_platforms ENABLE_MEMWATCH=1
+
+      - uses: actions/download-artifact@v3
+        with:
+          name: bmda
+
+      - name: Unzip windows bmda
+        run: unzip bmda.zip -d src/artifacts/windows
+
+      - name: Zip
+        run: ( ln -s src/artifacts blackmagic-firmware-${{ steps.getcommit.outputs.sha_short }}; zip -r9 blackmagic-firmware.zip blackmagic-firmware-${{ steps.getcommit.outputs.sha_short }}/ )
+
+      - name: Release
+        uses: ncipollo/release-action@v1
+        with:
+          artifacts: "blackmagic-firmware.zip"
+          body: "bmp firmware, current git, with feature: [memwatch: read memory while running #1655](https://github.com/blackmagic-debug/blackmagic/pull/1655). This is useful when debugging hard real time systems."
+          tag: memwatch
+          token: ${{ secrets.GITHUB_TOKEN }}
+          allowUpdates: true
 
 # not truncated

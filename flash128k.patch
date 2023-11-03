@@ -1,0 +1,24 @@
+diff --git a/src/Makefile b/src/Makefile
+index fc49839d..785a496e 100644
+--- a/src/Makefile
++++ b/src/Makefile
+@@ -34,7 +34,6 @@ SRC =              \
+ 	cortex.c       \
+ 	cortexm.c      \
+ 	crc32.c        \
+-	efm32.c        \
+ 	exception.c    \
+ 	gdb_if.c       \
+ 	gdb_main.c     \
+@@ -86,6 +85,11 @@ SRC =              \
+ 	target_flash.c \
+ 	target_probe.c
+ 
++# on platforms with 128k flash, drop efm32 target to make room
++ifeq (,$(filter f072 native stlink swlink,$(PROBE_HOST)))
++SRC += efm32.c
++endif
++
+ ifeq (,$(filter all_platforms,$(MAKECMDGOALS)))
+ include $(PLATFORM_DIR)/Makefile.inc
+ endif
