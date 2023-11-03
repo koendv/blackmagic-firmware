@@ -7,7 +7,8 @@ This is an automated unofficial build of [Black Magic Probe](https://black-magic
 Download Black Magic Probe firmware for all platforms:
 
 - [latest release](../../releases/latest/download/blackmagic-firmware.zip)
-- [current git](../../releases/download/current/blackmagic-firmware.zip)
+- [current git](../../releases/download/current/blackmagic-firmware.zip) latest development sources.
+- [memwatch](../../releases/download/current/blackmagic-firmware.zip) This is the latest development sources, built with feature [memwatch: read memory while running](https://github.com/blackmagic-debug/blackmagic/pull/1655). This is useful when debugging hard real time systems.
 
 [How to Install](INSTALL.md) on STM32F103 Blue Pill and STM32F401/STM32F411 Black Pill.
 
