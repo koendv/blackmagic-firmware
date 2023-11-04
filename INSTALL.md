@@ -58,6 +58,8 @@ Connect a STM32F401 or STM32F411 Black Pill for upload:
 - Install [udev rules](https://github.com/blackmagic-debug/blackmagic/tree/main/driver)
 - Disconnect and reconnect to usb
 
+I am using this blackpill board: [STM32F411 with 8MB flash](https://www.aliexpress.com/item/1005001456186625.html).
+
 ###  Pinout on STM32F401/STM32F411 black pill
 
 Pinout:
