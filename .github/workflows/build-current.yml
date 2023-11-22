@@ -77,7 +77,11 @@ jobs:
         run: sudo apt-get -y install libusb-dev libftdi1-dev libhidapi-dev
 
       - name: Build all platform firmwares and Linux BMDA
-        run: make all_platforms
+        run: |
+          make all_platforms
+          mv src/artifacts/hosted/ src/artifacts/linux/
+          mv src/artifacts/linux/blackmagic-hosted src/artifacts/linux/blackmagic
+
 
       - uses: actions/download-artifact@v3
         with:
