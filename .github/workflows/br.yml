@@ -1,0 +1,117 @@
+name: build release
+
+# Controls when the workflow will run
+on:
+  # Build saturdays
+  schedule:
+    - cron: "17 3 * * 6"
+
+  # Triggers the workflow on push or pull request
+  # push:
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+jobs:
+
+  build-bmda:
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: msys2 {0}
+    steps:
+      - id: upstream
+        uses: joutvhu/get-release@v1
+        with:
+          owner: "blackmagic-debug"
+          repo: "blackmagic"
+          latest: true
+          prerelease: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: actions/checkout@v3
+        with:
+          repository: "blackmagic-debug/blackmagic"
+          ref: "v1.10.2"
+
+      - uses: msys2/setup-msys2@v2
+        with:
+          msystem: UCRT64
+          update: true
+          install: git zip mingw-w64-ucrt-x86_64-toolchain
+          pacboy: libusb:p libftdi:p hidapi:p
+
+      - name: build
+        run: |
+          rm -fv /ucrt64/lib/libftdi1.dll.a /ucrt64/lib/libhidapi.dll.a /ucrt64/lib/libusb-1.0.dll.a
+          mingw32-make PROBE_HOST=hosted HOSTED_BMP_ONLY=0
+          zip -j9 bmda.zip src/blackmagic.exe 3rdparty/ftdi/amd64/ftd2xx.dll
+      - uses: actions/upload-artifact@v3
+        with:
+          name: bmda
+          path: bmda.zip
+          retention-days: 1
+
+  build-firmware:
+    runs-on: ubuntu-latest
+    needs: build-bmda
+
+    steps:
+      - id: upstream
+        uses: joutvhu/get-release@v1
+        with:
+          owner: "blackmagic-debug"
+          repo: "blackmagic"
+          latest: true
+          prerelease: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: actions/checkout@v3
+        with:
+          repository: "blackmagic-debug/blackmagic"
+          ref: "v1.10.2"
+
+      - uses: actions/checkout@v3
+        with:
+          path: "bmp"
+
+      - name: Patch
+        run: patch -p1 -i bmp/blackmagic.patch; patch -p1 -i bmp/bluepill.patch
+
+      # Setup and use a suitable ARM GCC for the firmware
+      - name: Setup ARM GCC
+        uses: carlosperate/arm-none-eabi-gcc-action@v1
+        with:
+          release: '12.2.Rel1'
+
+      - name: Install BMDA dependencies
+        run: sudo apt-get -y install libusb-dev libftdi1-dev libhidapi-dev
+
+      - name: Build all platform firmwares and Linux BMDA
+        run: |
+          make all_platforms
+          mv src/artifacts/hosted/ src/artifacts/linux/
+          mv src/artifacts/linux/blackmagic-hosted src/artifacts/linux/blackmagic
+
+      - uses: actions/download-artifact@v3
+        with:
+          name: bmda
+
+      - name: Unzip windows bmda
+        run: unzip bmda.zip -d src/artifacts/windows
+
+      - name: Zip
+        run: ( ln -s src/artifacts blackmagic-firmware-${{ steps.upstream.outputs.tag_name }}; zip -r9 blackmagic-firmware.zip blackmagic-firmware-${{ steps.upstream.outputs.tag_name }}/ )
+
+      - name: Release
+        uses: ncipollo/release-action@v1
+        with:
+          artifacts: "blackmagic-firmware.zip"
+          body: "bmp firmware, release"
+          tag: "v1.10.2"
+          token: ${{ secrets.GITHUB_TOKEN }}
+          skipIfReleaseExists: true
+
+# not truncated
